@@ -1,9 +1,14 @@
-name: Deploy static website
+name: Production - Deploy static website
 
 on:
   # push:
   #   branches: [ "main" ]
   workflow_dispatch:
+    inputs:
+      deployment_token:
+        description: 'Production deployment password'
+        required: true
+        type: string
 env:
   AWS_REGION: ap-south-1
   S3_BUCKET: "tejas-idsk229"
@@ -18,6 +23,17 @@ jobs:
     environment: production
 
     steps:
+    - name: Verify deployment password
+      env:
+        INPUT_TOKEN: ${{ inputs.deployment_token }}
+        EXPECTED_TOKEN: ${{ secrets.PRODUCTION_DEPLOYMENT_TOKEN }}
+      run: |
+        if [ "$INPUT_TOKEN" != "$EXPECTED_TOKEN" ]; then
+          echo "Deployment password verification failed."
+          exit 1
+        fi
+        echo "Deployment password verified."
+
     - name: Checkout
       uses: actions/checkout@v4
 
